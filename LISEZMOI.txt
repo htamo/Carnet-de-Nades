@@ -1,0 +1,50 @@
+CARNET DE NADES II - VERSION INSTALLABLE
+=========================================
+
+Cette application s'installe sur ton téléphone comme une vraie appli : icône
+dédiée, plein écran, et elle marche sans connexion après la première ouverture.
+Tes lineups, tes images et tes radars sont enregistrés sur l'appareil.
+
+1. METTRE L'APPLI EN LIGNE (une seule fois, gratuit)
+----------------------------------------------------
+Exemple avec GitHub Pages :
+  1. Crée un compte sur github.com si besoin, puis un nouveau dépôt public
+     (par exemple "carnet-nades").
+  2. Clique sur "uploading an existing file" et glisse TOUT le contenu de ce
+     dossier : index.html, manifest.webmanifest, sw.js et le dossier icons.
+     Valide avec "Commit changes".
+  3. Dans le dépôt : Settings > Pages > Build and deployment. Choisis
+     "Deploy from a branch", branche "main", dossier "/ (root)", puis Save.
+  4. Après une minute ou deux, l'adresse apparaît en haut de la page :
+     https://TON-PSEUDO.github.io/carnet-nades/
+
+Tu peux aussi utiliser Netlify Drop (app.netlify.com/drop) : glisse le dossier
+et tu obtiens une adresse.
+
+2. L'INSTALLER SUR LE TÉLÉPHONE
+-------------------------------
+  Android (Chrome) : ouvre l'adresse, menu (trois points), puis
+                     "Installer l'application" ou "Ajouter à l'écran d'accueil".
+  iPhone (Safari)  : ouvre l'adresse, bouton Partager, puis
+                     "Sur l'écran d'accueil".
+
+3. AVOIR UN VRAI FICHIER APK (facultatif)
+-----------------------------------------
+Va sur pwabuilder.com, colle l'adresse de ton appli, puis choisis Android.
+L'outil génère un paquet que tu peux installer ou publier.
+
+4. RÉCUPÉRER TES DONNÉES DE LA V2 (Claude)
+------------------------------------------
+  1. Dans la page "Carnet de nades II" sur Claude, appuie sur
+     "Exporter mes données" et enregistre le fichier .json.
+  2. Dans l'application installée, appuie sur "Importer" et choisis ce fichier.
+Le bouton "Exporter" de l'application sert à faire des sauvegardes ou à passer
+d'un appareil à l'autre : exporte sur l'un, importe sur l'autre.
+
+À SAVOIR
+--------
+- Les données restent sur l'appareil. Si tu effaces les données du navigateur
+  ou que tu désinstalles l'appli, elles disparaissent : exporte de temps en temps.
+- Il n'y a pas de synchronisation automatique entre appareils.
+- L'image du radar de chaque map est à ajouter une fois avec le bouton
+  "Ajouter l'image du radar".

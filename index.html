@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnet de nades II</title>
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#edf0f3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1318">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nades">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); } body { margin: 0; } img { max-width: 100%; }</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a column of maps (a horizontal scroller on phones) beside a filtered list of lineup cards.
+   Colour is reserved for meaning: amber = Terro, blue = CT, and one hue per grenade type. */
+:root {
+  --bg: #edf0f3;
+  --surface: #ffffff;
+  --surface-2: #f4f6f8;
+  --line: #d3dae1;
+  --fg: #141a21;
+  --fg-2: #46525e;
+  --fg-3: #64717d;
+  --ink: #141a21;
+  --ink-fg: #ffffff;
+  --focus: #2563d6;
+  --scrim: rgba(10, 14, 18, 0.55);
+  --ok: #23834f;
+  --warn: #b26a00;
+  --danger: #b3261e;
+  --t-bg: #fbebcc;
+  --t-fg: #744400;
+  --ct-bg: #dbe8fb;
+  --ct-fg: #1b4b8c;
+  --both-bg: #e4e8ec;
+  --both-fg: #3b4753;
+  --smoke: #5d7388;
+  --molotov: #cf4a17;
+  --flash: #b98a00;
+  --he: #3f8a3a;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1318;
+    --surface: #161d24;
+    --surface-2: #1c252d;
+    --line: #2a3540;
+    --fg: #e7ecf0;
+    --fg-2: #a9b4be;
+    --fg-3: #8793a0;
+    --ink: #e7ecf0;
+    --ink-fg: #0e1318;
+    --focus: #7aa7f7;
+    --scrim: rgba(0, 0, 0, 0.65);
+    --ok: #4fc283;
+    --warn: #e0a13a;
+    --danger: #f08a84;
+    --t-bg: #3a2a0d;
+    --t-fg: #f0c872;
+    --ct-bg: #142f4e;
+    --ct-fg: #92bdf2;
+    --both-bg: #26313b;
+    --both-fg: #c3ccd5;
+    --smoke: #8ea7bd;
+    --molotov: #f0794a;
+    --flash: #e3b92f;
+    --he: #6fc267;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1318;
+  --surface: #161d24;
+  --surface-2: #1c252d;
+  --line: #2a3540;
+  --fg: #e7ecf0;
+  --fg-2: #a9b4be;
+  --fg-3: #8793a0;
+  --ink: #e7ecf0;
+  --ink-fg: #0e1318;
+  --focus: #7aa7f7;
+  --scrim: rgba(0, 0, 0, 0.65);
+  --ok: #4fc283;
+  --warn: #e0a13a;
+  --danger: #f08a84;
+  --t-bg: #3a2a0d;
+  --t-fg: #f0c872;
+  --ct-bg: #142f4e;
+  --ct-fg: #92bdf2;
+  --both-bg: #26313b;
+  --both-fg: #c3ccd5;
+  --smoke: #8ea7bd;
+  --molotov: #f0794a;
+  --flash: #e3b92f;
+  --he: #6fc267;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 var(--f-body);
+  padding-block: 20px 120px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.muted { color: var(--fg-3); margin: 0; }
+
+[data-type="smoke"] { --tc: var(--smoke); }
+[data-type="molotov"] { --tc: var(--molotov); }
+[data-type="flash"] { --tc: var(--flash); }
+[data-type="he"] { --tc: var(--he); }
+.ico { display: inline-flex; flex: none; color: var(--tc, var(--fg-2)); }
+.ico svg { display: block; }
+
+.app { max-width: 1120px; margin-inline: auto; }
+
+/* header */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 16px; padding-bottom: 20px; }
+h1 {
+  margin: 0;
+  font: 700 clamp(36px, 8vw, 56px)/0.95 var(--f-display);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.sub { margin: 8px 0 0; color: var(--fg-2); }
+.status { display: flex; align-items: center; gap: 8px; margin: 0; font: 500 12px var(--f-mono); color: var(--fg-3); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-3); }
+.status[data-state="ok"] .dot { background: var(--ok); }
+.status[data-state="warn"] .dot { background: var(--warn); }
+
+/* layout */
+.layout { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 880px) { .layout { grid-template-columns: 208px minmax(0, 1fr); gap: 36px; } }
+
+.maps { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; }
+.map-btn {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  font: 600 18px/1 var(--f-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  align-items: center;
+}
+.map-btn .n { font: 500 12px var(--f-mono); letter-spacing: 0; color: var(--fg-3); }
+.map-btn[aria-current="true"] { background: var(--ink); border-color: var(--ink); color: var(--ink-fg); }
+.map-btn[aria-current="true"] .n { color: var(--ink-fg); opacity: 0.7; }
+@media (min-width: 880px) {
+  .maps { flex-direction: column; overflow: visible; padding-bottom: 0; }
+  .map-btn { width: 100%; justify-content: space-between; }
+}
+
+.main { min-width: 0; }
+.map-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-bottom: 14px; }
+.map-head h2 { margin: 0; font: 700 clamp(30px, 6vw, 44px)/1 var(--f-display); letter-spacing: 0.03em; text-transform: uppercase; }
+.map-head p { margin: 0; font: 500 13px var(--f-mono); color: var(--fg-3); }
+
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 16px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); }
+.seg button { min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: var(--fg-2); font-weight: 600; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  font-weight: 600;
+  color: var(--fg-2);
+}
+.chip[aria-pressed="true"] { border-color: var(--fg); background: var(--surface-2); color: var(--fg); box-shadow: inset 0 -2px 0 var(--tc); }
+.search { flex: 1 1 200px; min-width: 0; }
+
+input[type="text"], input[type="search"], select, textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: 16px/1.4 var(--f-body);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+textarea { min-height: 92px; resize: vertical; }
+::placeholder { color: var(--fg-3); opacity: 1; }
+
+/* cards */
+.list { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); align-items: start; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0; }
+.card-top { display: flex; align-items: flex-start; gap: 4px; padding: 6px 6px 6px 0; }
+.toggle { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 12px; padding: 8px 0 8px 12px; border: 0; background: none; text-align: left; }
+.toggle > .ico { width: 40px; height: 40px; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); }
+.ttl { display: grid; gap: 4px; min-width: 0; }
+.name { font: 600 22px/1.1 var(--f-display); letter-spacing: 0.01em; overflow-wrap: anywhere; }
+.route { font: 500 13px/1.35 var(--f-mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 0 8px; border: 1px solid var(--line); border-radius: 3px; font: 500 12px/1 var(--f-mono); color: var(--fg-2); }
+.tag.type::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--tc); }
+.tag.side-t { background: var(--t-bg); color: var(--t-fg); border-color: transparent; }
+.tag.side-ct { background: var(--ct-bg); color: var(--ct-fg); border-color: transparent; }
+.tag.side-both { background: var(--both-bg); color: var(--both-fg); border-color: transparent; }
+.tag.ex { border-style: dashed; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+.fav { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: transparent; color: var(--fg-3); border-radius: 4px; }
+.fav.on { color: var(--flash); }
+.fav.on svg { fill: currentColor; }
+
+.card-body { display: grid; gap: 14px; padding: 14px 14px 14px 64px; border-top: 1px solid var(--line); }
+@media (max-width: 420px) { .card-body { padding-left: 14px; } }
+.k { margin: 0 0 3px; font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+.v { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.shots { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+.shot { margin: 0; display: grid; gap: 4px; min-width: 0; }
+.shot figcaption { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+.shot-btn { padding: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); overflow: hidden; display: block; }
+.shot-btn img { display: block; width: 100%; max-width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); font-weight: 600; }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--ink-fg); min-height: 44px; }
+.btn:disabled { opacity: 0.55; cursor: default; }
+
+.empty { grid-column: 1 / -1; padding: 28px 18px; border: 1px dashed var(--line); border-radius: 6px; background: var(--surface); display: grid; gap: 8px; justify-items: start; }
+.empty-t { margin: 0; font: 600 26px/1.1 var(--f-display); }
+.empty-s { margin: 0; color: var(--fg-2); max-width: 48ch; }
+.empty .btn { margin-top: 6px; }
+
+/* add button */
+.fab {
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 20px 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--ink-fg);
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+/* sheet */
+body.lock { overflow: hidden; }
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--scrim);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.sheet { width: 100%; max-width: 620px; max-height: 94%; display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--line); border-radius: 8px 8px 0 0; min-height: 0; }
+@media (min-width: 700px) { .overlay { align-items: center; } .sheet { border-radius: 8px; max-height: 90%; } }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 8px 8px 18px; }
+.sheet-head h2 { margin: 0; font: 700 28px/1 var(--f-display); letter-spacing: 0.03em; text-transform: uppercase; }
+.icon-btn { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: transparent; border-radius: 4px; }
+.sheet-body { overflow-y: auto; overscroll-behavior: contain; display: grid; gap: 16px; padding: 8px 18px 20px; min-height: 0; }
+.sheet-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); background: var(--surface); }
+.fld { min-width: 0; }
+.lbl { display: block; margin: 0 0 6px; font-weight: 600; font-size: 13px; color: var(--fg-2); }
+.lbl small { font-weight: 400; color: var(--fg-3); }
+.two { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { position: relative; }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt span.box { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); font-weight: 600; cursor: pointer; }
+.opt input:checked + span.box { background: var(--ink); border-color: var(--ink); color: var(--ink-fg); }
+.opt input:checked + span.box .ico { color: currentColor; }
+.opt input:focus-visible + span.box { outline: 2px solid var(--focus); outline-offset: 2px; }
+.err { margin: 6px 0 0; color: var(--danger); font-size: 13px; }
+input[aria-invalid="true"] { border-color: var(--danger); }
+.up input[type="file"] { width: 100%; font-size: 14px; }
+.imgs { display: grid; gap: 10px; margin-top: 10px; }
+.imgs:empty { display: none; }
+.img-row { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.img-row img { display: block; width: 88px; max-width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 3px; }
+.img-row input[type="text"] { min-height: 40px; }
+@media (max-width: 420px) { .img-row { grid-template-columns: 72px minmax(0, 1fr); } .img-row img { width: 72px; } .img-row .btn { grid-column: 1 / -1; } }
+.hint { margin: 6px 0 0; font-size: 13px; color: var(--fg-3); }
+
+.lightbox { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: var(--scrim); padding: 16px; }
+.lightbox img { max-width: 100%; max-height: 86vh; border-radius: 4px; background: var(--surface); }
+.lightbox .icon-btn { position: absolute; top: calc(8px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); background: var(--surface); border: 1px solid var(--line); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 70;
+  max-width: min(92vw, 420px);
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--ink-fg);
+  font-weight: 500;
+}
+.top-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+/* plan de la map */
+.stage { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.board-col { display: grid; gap: 8px; min-width: 0; max-width: 560px; }
+@media (min-width: 1000px) {
+  .stage { grid-template-columns: 440px minmax(0, 1fr); gap: 20px; }
+  .board-col { position: sticky; top: 16px; }
+}
+.board { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); overflow: hidden; touch-action: manipulation; }
+.board-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; }
+.board-empty {
+  position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center;
+  color: var(--fg-3); font: 500 13px/1.4 var(--f-mono);
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 10% 10%;
+}
+.board-empty span { background: var(--surface); padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px; }
+.board-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pin { cursor: pointer; }
+.pin .shape { fill: var(--tc); stroke: var(--surface); stroke-width: 0.9; paint-order: stroke; }
+.pin.sel .shape { stroke: var(--fg); stroke-width: 1.2; }
+.pin:focus { outline: none; }
+.pin:focus-visible .shape { stroke: var(--focus); stroke-width: 1.7; }
+.route-line { stroke: var(--fg); stroke-width: 0.7; stroke-dasharray: 2 1.4; fill: none; opacity: 0.85; }
+.spot { fill: var(--surface); stroke: var(--fg); stroke-width: 0.9; }
+.board.pl { max-width: 420px; cursor: crosshair; }
+.board.pl .board-svg { pointer-events: none; }
+.board-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.board-tools .hint { margin: 0; flex: 1 1 180px; }
+.card.sel { border-color: var(--fg); }
+@media (hover: hover) {
+  .map-btn:hover:not([aria-current="true"]), .chip:hover, .btn:hover:not(:disabled), .fav:hover, .icon-btn:hover { background: var(--surface-2); }
+  .seg button:hover:not([aria-pressed="true"]) { background: var(--surface-2); }
+  .btn.primary:hover:not(:disabled) { background: var(--ink); opacity: 0.88; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <div>
+      <h1>Carnet de nades II</h1>
+      <p class="sub" id="sub">Smokes, molotovs, flashs et HE, classés par map et par côté.</p>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="btn" id="exp-btn">Exporter</button>
+      <button type="button" class="btn" id="imp-btn">Importer</button>
+      <input id="imp-file" type="file" accept="application/json,.json" hidden>
+      <p class="status" id="status" role="status" data-state="idle"><span class="dot"></span><span id="status-t">Chargement…</span></p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="maps" id="maps" aria-label="Maps"></nav>
+
+    <main class="main">
+      <div class="map-head">
+        <h2 id="map-title">Mirage</h2>
+        <p id="map-count"></p>
+      </div>
+
+      <div class="controls">
+        <div class="seg" id="seg" role="group" aria-label="Côté">
+          <button type="button" data-v="all" aria-pressed="true">Tous</button>
+          <button type="button" data-v="t" aria-pressed="false">Terro</button>
+          <button type="button" data-v="ct" aria-pressed="false">CT</button>
+        </div>
+        <div class="chips" id="types" role="group" aria-label="Type de grenade"></div>
+        <input class="search" id="q" type="search" placeholder="Chercher un spot, un nom…" aria-label="Chercher un lineup" autocomplete="off">
+      </div>
+
+      <div class="stage">
+        <section class="board-col" aria-label="Plan de la map">
+          <div class="board" id="board"></div>
+          <div class="board-tools">
+            <button type="button" class="btn" id="map-img-btn">Ajouter l'image du radar</button>
+            <input id="map-file" type="file" accept="image/*" hidden>
+            <p class="hint" id="board-hint"></p>
+          </div>
+        </section>
+        <div class="list" id="list" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<button class="fab" id="fab" type="button">
+  <span class="ico" aria-hidden="true" style="color:currentColor"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+  Ajouter
+</button>
+
+<div class="overlay" id="overlay" hidden>
+  <form class="sheet" id="form" role="dialog" aria-modal="true" aria-labelledby="sheet-title" novalidate>
+    <div class="sheet-head">
+      <h2 id="sheet-title">Nouveau lineup</h2>
+      <button type="button" class="icon-btn" id="close" aria-label="Fermer"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="fld">
+        <label class="lbl" for="f-title">Nom du lineup</label>
+        <input id="f-title" type="text" placeholder="ex. Smoke Fenêtre" autocomplete="off" aria-describedby="f-title-err">
+        <p class="err" id="f-title-err" hidden></p>
+      </div>
+
+      <div class="two">
+        <div class="fld">
+          <label class="lbl" for="f-map">Map</label>
+          <select id="f-map"></select>
+          <div id="f-mapname-wrap" hidden style="margin-top:8px">
+            <label class="lbl" for="f-mapname">Nom de la map</label>
+            <input id="f-mapname" type="text" placeholder="ex. Cache" autocomplete="off" aria-describedby="f-mapname-err">
+            <p class="err" id="f-mapname-err" hidden></p>
+          </div>
+        </div>
+        <div class="fld">
+          <span class="lbl" id="f-side-l">Côté</span>
+          <div class="opts" role="radiogroup" aria-labelledby="f-side-l" id="f-side-opts"></div>
+        </div>
+      </div>
+
+      <div class="fld">
+        <span class="lbl" id="f-type-l">Type</span>
+        <div class="opts" role="radiogroup" aria-labelledby="f-type-l" id="f-type-opts"></div>
+      </div>
+
+      <div class="two">
+        <div class="fld">
+          <label class="lbl" for="f-from">Position de lancer</label>
+          <input id="f-from" type="text" placeholder="ex. Spawn T, derrière la caisse" autocomplete="off">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="f-to">Cible</label>
+          <input id="f-to" type="text" placeholder="ex. Fenêtre" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="fld">
+        <span class="lbl" id="f-place-l">Placer sur la map <small>(optionnel)</small></span>
+        <div class="opts" role="radiogroup" aria-labelledby="f-place-l" id="f-place-opts"></div>
+        <div class="board pl" id="pl-board" style="margin-top:10px"></div>
+        <p class="hint" id="pl-hint"></p>
+        <button type="button" class="btn" id="pl-clear" style="margin-top:8px">Effacer les points</button>
+      </div>
+
+      <div class="two">
+        <div class="fld">
+          <label class="lbl" for="f-throw">Type de lancer</label>
+          <select id="f-throw"></select>
+        </div>
+        <div class="fld">
+          <label class="lbl" for="f-click">Clic</label>
+          <select id="f-click"></select>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label class="lbl" for="f-steps">Comment le lancer <small>(repère de visée, placement)</small></label>
+        <textarea id="f-steps" placeholder="ex. Viser le coin du toit, lancer en jumpthrow."></textarea>
+      </div>
+      <div class="fld">
+        <label class="lbl" for="f-notes">Notes <small>(optionnel)</small></label>
+        <textarea id="f-notes" placeholder="ex. Utile sur les exécutes A, rapide à réutiliser."></textarea>
+      </div>
+
+      <div class="fld up">
+        <label class="lbl" for="f-imgs">Images <small>(optionnel, plusieurs possibles)</small></label>
+        <input id="f-imgs" type="file" accept="image/*" multiple>
+        <p class="hint" id="img-hint"></p>
+        <div class="imgs" id="imgs"></div>
+      </div>
+    </div>
+    <div class="sheet-foot">
+      <button type="button" class="btn" id="cancel">Annuler</button>
+      <button type="submit" class="btn primary" id="save">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button type="button" class="icon-btn" id="lb-close" aria-label="Fermer l'image"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <img id="lb-img" alt="">
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var MAPS = [
+    { id: "mirage", name: "Mirage" },
+    { id: "inferno", name: "Inferno" },
+    { id: "dust2", name: "Dust 2" },
+    { id: "nuke", name: "Nuke" },
+    { id: "overpass", name: "Overpass" },
+    { id: "ancient", name: "Ancient" },
+    { id: "anubis", name: "Anubis" },
+    { id: "vertigo", name: "Vertigo" },
+    { id: "train", name: "Train" }
+  ];
+  var TYPES = [
+    { id: "smoke", label: "Smoke" },
+    { id: "molotov", label: "Molotov" },
+    { id: "flash", label: "Flash" },
+    { id: "he", label: "HE" }
+  ];
+  var SIDES = { t: "Terro", ct: "CT", both: "T + CT" };
+  var CLICKS = [["left", "Clic gauche"], ["right", "Clic droit"], ["both", "Gauche + droit"]];
+  var THROWS = [["stand", "Statique"], ["jump", "Jumpthrow"], ["run", "Course"], ["runjump", "Course + jump"], ["crouch", "Accroupi"], ["walk", "Marche"]];
+
+  var PATHS = {
+    smoke: '<path d="M7 19a4.5 4.5 0 0 1-.4-8.98A6 6 0 0 1 18 9.6 4.7 4.7 0 0 1 17.5 19H7z"/>',
+    molotov: '<path d="M10 9.5h4V11l2 2.5V20a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-6.5L10 11V9.5z"/><path d="M12 2.8c1.6 1.7 2.1 3 1.2 4.3-.4.6-1.3.8-2.1.2-.9-.7-1-2.4.9-4.5z"/>',
+    flash: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/><path d="M18.5 16.5v3M17 18h3"/>',
+    he: '<circle cx="12" cy="14.5" r="6"/><path d="M10 8.6V5.5h4v3.1M14 6l3.2-1.4"/>',
+    star: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/>',
+    edit: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
+    trash: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>'
+  };
+  function icon(name, size) {
+    var s = size || 20;
+    return '<svg viewBox="0 0 24 24" width="' + s + '" height="' + s + '" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + PATHS[name] + "</svg>";
+  }
+
+  function h(tag, props) {
+    var el = document.createElement(tag);
+    var p = props || {};
+    Object.keys(p).forEach(function (k) {
+      var v = p[k];
+      if (v == null || v === false) return;
+      if (k === "class") el.className = v;
+      else if (k === "html") el.innerHTML = v;
+      else if (k.indexOf("on") === 0) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? "" : v);
+    });
+    var kids = Array.prototype.slice.call(arguments, 2);
+    (function add(list) {
+      list.forEach(function (c) {
+        if (c == null || c === false) return;
+        if (Array.isArray(c)) add(c);
+        else el.append(c);
+      });
+    })(kids);
+    return el;
+  }
+  function $(id) { return document.getElementById(id); }
+  function str(v) { return typeof v === "string" ? v : ""; }
+  function safeSrc(s) {
+    return typeof s === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(s) ? s : "";
+  }
+  function normPt(p) {
+    if (!p || typeof p !== "object") return null;
+    var x = +p.x, y = +p.y;
+    if (!isFinite(x) || !isFinite(y)) return null;
+    return { x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)) };
+  }
+  function normImages(d) {
+    var out = [];
+    if (Array.isArray(d.images)) {
+      d.images.slice(0, 12).forEach(function (m) {
+        if (!m || typeof m !== "object") return;
+        var id = typeof m.id === "string" && /^[0-9a-f]{32}$/.test(m.id) ? m.id : "";
+        var src = id ? "" : safeSrc(m.src);
+        if (id || src) out.push({ id: id, src: src, cap: str(m.cap).slice(0, 80) });
+      });
+    } else {
+      if (safeSrc(d.imgA)) out.push({ id: "", src: d.imgA, cap: "Position" });
+      if (safeSrc(d.imgB)) out.push({ id: "", src: d.imgB, cap: "Visée" });
+    }
+    return out;
+  }
+  function imgUrl(m) { return m.id ? "/_blob/" + m.id : m.src; }
+  function labelOf(list, v) {
+    for (var i = 0; i < list.length; i++) if (list[i][0] === v) return list[i][1];
+    return "";
+  }
+  function mintId() { return "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function slug(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "autre";
+  }
+
+  function norm(id, d) {
+    d = d || {};
+    return {
+      id: id,
+      map: str(d.map) || "mirage",
+      mapName: str(d.mapName),
+      side: d.side === "ct" || d.side === "both" ? d.side : "t",
+      type: TYPES.some(function (t) { return t.id === d.type; }) ? d.type : "smoke",
+      title: str(d.title) || "Sans titre",
+      from: str(d.from),
+      to: str(d.to),
+      click: str(d.click),
+      throwType: str(d.throwType),
+      steps: str(d.steps),
+      notes: str(d.notes),
+      images: normImages(d),
+      fp: normPt(d.fp),
+      tp: normPt(d.tp),
+      fav: d.fav === true,
+      example: d.example === true,
+      createdAt: +d.createdAt || 0
+    };
+  }
+  function plain(item) {
+    var o = {};
+    Object.keys(item).forEach(function (k) { if (k !== "id") o[k] = item[k]; });
+    return o;
+  }
+
+  /* ---------- storage ---------- */
+  function makeLocal() {
+    var KEY = "carnet-nades-v1";
+    var rows = [];
+    try { rows = JSON.parse(localStorage.getItem(KEY) || "[]"); if (!Array.isArray(rows)) rows = []; } catch (e) { rows = []; }
+    var cb = null, mapsCb = null;
+    var MK = "carnet-nades-maps-v2";
+    function readMaps() {
+      try { var m = JSON.parse(localStorage.getItem(MK) || "{}"); return m && typeof m === "object" ? m : {}; } catch (e) { return {}; }
+    }
+    function persist() { try { localStorage.setItem(KEY, JSON.stringify(rows)); return true; } catch (e) { return false; } }
+    function emit() { if (cb) cb(rows.map(function (r) { return norm(r.id, r); })); }
+    return {
+      kind: "local",
+      subscribeMaps: function (fn) { mapsCb = fn; fn(readMaps()); },
+      saveMap: function (id, data) {
+        var m = readMaps(); m[id] = data;
+        try { localStorage.setItem(MK, JSON.stringify(m)); } catch (e) { return Promise.reject({ code: "local_storage" }); }
+        if (mapsCb) mapsCb(m);
+        return Promise.resolve();
+      },
+      subscribe: function (fn) { cb = fn; emit(); },
+      save: function (item) {
+        var row = plain(item); row.id = item.id;
+        var i = rows.findIndex(function (r) { return r.id === item.id; });
+        if (i < 0) rows.push(row); else rows[i] = row;
+        var ok = persist(); emit();
+        return ok ? Promise.resolve() : Promise.reject({ code: "local_storage" });
+      },
+      remove: function (id) {
+        rows = rows.filter(function (r) { return r.id !== id; });
+        persist(); emit();
+        return Promise.resolve();
+      }
+    };
+  }
+  var LIM = { imgs: 2, imgLen: 100000, imgDims: null, mapLen: 190000, mapDims: [1100, 900, 720, 560], docMax: 250000 };
+  var BIG = { imgs: 12, imgLen: 450000, imgDims: [1400, 1200, 1000, 800], mapLen: 1000000, mapDims: [1600, 1400, 1200, 1000, 800], docMax: 6000000 };
+
+  function openIdb() {
+    return new Promise(function (res, rej) {
+      if (!window.indexedDB) { rej(new Error("noidb")); return; }
+      var r;
+      try { r = indexedDB.open("carnet-nades-ii", 1); } catch (e) { rej(e); return; }
+      r.onupgradeneeded = function () {
+        var d = r.result;
+        if (!d.objectStoreNames.contains("lineups")) d.createObjectStore("lineups", { keyPath: "id" });
+        if (!d.objectStoreNames.contains("maps")) d.createObjectStore("maps", { keyPath: "id" });
+      };
+      r.onsuccess = function () { res(r.result); };
+      r.onerror = function () { rej(r.error); };
+      r.onblocked = function () { rej(new Error("blocked")); };
+    });
+  }
+  function makeIdb(dbh) {
+    var cb = null, mapsCb = null;
+    function getAll(name) {
+      return new Promise(function (res, rej) {
+        var q = dbh.transaction(name, "readonly").objectStore(name).getAll();
+        q.onsuccess = function () { res(q.result || []); };
+        q.onerror = function () { rej(q.error); };
+      });
+    }
+    function write(name, fn) {
+      return new Promise(function (res, rej) {
+        var tx = dbh.transaction(name, "readwrite");
+        fn(tx.objectStore(name));
+        tx.oncomplete = function () { res(); };
+        tx.onerror = tx.onabort = function () {
+          var e = tx.error;
+          rej({ code: e && e.name === "QuotaExceededError" ? "quota_exceeded" : "write_failed" });
+        };
+      });
+    }
+    function refresh() {
+      return getAll("lineups").then(function (rows) { if (cb) cb(rows.map(function (r) { return norm(r.id, r); })); });
+    }
+    function refreshMaps() {
+      return getAll("maps").then(function (rows) {
+        var o = {};
+        rows.forEach(function (r) { o[r.id] = r; });
+        if (mapsCb) mapsCb(o);
+      });
+    }
+    return {
+      kind: "idb",
+      subscribe: function (fn) { cb = fn; refresh().catch(function () { fn([]); }); },
+      subscribeMaps: function (fn) { mapsCb = fn; refreshMaps().catch(function () {}); },
+      save: function (item) {
+        var row = plain(item); row.id = item.id;
+        return write("lineups", function (st) { st.put(row); }).then(refresh);
+      },
+      remove: function (id) { return write("lineups", function (st) { st.delete(id); }).then(refresh); },
+      saveMap: function (id, data) {
+        var row = Object.assign({}, data, { id: id });
+        return write("maps", function (st) { st.put(row); }).then(refreshMaps);
+      }
+    };
+  }
+
+  /* ---------- state ---------- */
+  var state = { items: [], loaded: false, sync: "wait", mode: "", map: "mirage", side: "all", types: new Set(), q: "", open: new Set(), confirm: null, busy: new Set(), mapImgs: {}, sel: "" };
+  var store = null;
+  var assetsApi = null;
+  var PK = "carnet-nades-ui";
+  try {
+    var pr = JSON.parse(localStorage.getItem(PK) || "{}");
+    if (typeof pr.map === "string") state.map = pr.map;
+    if (pr.side === "all" || pr.side === "t" || pr.side === "ct") state.side = pr.side;
+  } catch (e) {}
+  function savePrefs() { try { localStorage.setItem(PK, JSON.stringify({ map: state.map, side: state.side })); } catch (e) {} }
+
+  var els = {
+    maps: $("maps"), list: $("list"), sub: $("sub"), status: $("status"), statusT: $("status-t"),
+    mapTitle: $("map-title"), mapCount: $("map-count"), seg: $("seg"), types: $("types"), q: $("q"),
+    overlay: $("overlay"), form: $("form"), sheetTitle: $("sheet-title"), toast: $("toast"),
+    lightbox: $("lightbox"), lbImg: $("lb-img")
+  };
+  var f = {
+    title: $("f-title"), map: $("f-map"), mapName: $("f-mapname"), mapNameWrap: $("f-mapname-wrap"),
+    from: $("f-from"), to: $("f-to"), click: $("f-click"), throwType: $("f-throw"),
+    steps: $("f-steps"), notes: $("f-notes"), files: $("f-imgs")
+  };
+
+  function allMaps() {
+    var known = {};
+    MAPS.forEach(function (m) { known[m.id] = true; });
+    var extra = {}, order = [];
+    state.items.forEach(function (it) {
+      if (!known[it.map] && !extra[it.map]) { extra[it.map] = { id: it.map, name: it.mapName || it.map }; order.push(it.map); }
+    });
+    return MAPS.concat(order.map(function (k) { return extra[k]; }));
+  }
+  function mapNameOf(id) {
+    var m = allMaps().filter(function (x) { return x.id === id; })[0];
+    return m ? m.name : id;
+  }
+
+  /* ---------- rendering ---------- */
+  function toast(msg) {
+    els.toast.textContent = msg;
+    els.toast.hidden = false;
+    clearTimeout(toast.t);
+    toast.t = setTimeout(function () { els.toast.hidden = true; }, 3400);
+  }
+
+  function renderStatus() {
+    var map = {
+      ok: ["ok", "Synchronisé"],
+      wait: ["idle", "Connexion…"],
+      stale: ["warn", "Hors ligne, données peut-être anciennes"],
+      error: ["warn", "Lecture impossible"],
+      revoked: ["warn", "Accès retiré"],
+      local: ["ok", "Enregistré sur cet appareil"]
+    };
+    var s = map[state.sync] || map.wait;
+    els.status.setAttribute("data-state", s[0]);
+    els.statusT.textContent = s[1];
+  }
+
+  function renderSub() {
+    var n = state.items.length;
+    var maps = {};
+    state.items.forEach(function (i) { maps[i.map] = true; });
+    var m = Object.keys(maps).length;
+    els.sub.textContent = state.loaded && n
+      ? n + " lineup" + (n > 1 ? "s" : "") + " sur " + m + " map" + (m > 1 ? "s" : "")
+      : "Smokes, molotovs, flashs et HE, classés par map et par côté.";
+  }
+
+  function renderNav() {
+    var counts = {};
+    state.items.forEach(function (i) { counts[i.map] = (counts[i.map] || 0) + 1; });
+    var maps = allMaps();
+    if (!maps.some(function (m) { return m.id === state.map; })) state.map = "mirage";
+    els.maps.replaceChildren.apply(els.maps, maps.map(function (m) {
+      return h("button", {
+        type: "button", class: "map-btn", "data-k": "map:" + m.id,
+        "aria-current": state.map === m.id ? "true" : null,
+        onclick: function () { state.map = m.id; state.confirm = null; savePrefs(); render(); }
+      }, h("span", null, m.name), h("span", { class: "n" }, String(counts[m.id] || 0)));
+    }));
+  }
+
+  function renderControls() {
+    Array.prototype.forEach.call(els.seg.querySelectorAll("button"), function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-v") === state.side ? "true" : "false");
+    });
+    Array.prototype.forEach.call(els.types.querySelectorAll("button"), function (b) {
+      b.setAttribute("aria-pressed", state.types.has(b.getAttribute("data-type")) ? "true" : "false");
+    });
+  }
+
+  /* ---------- plan de la map ---------- */
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    for (var i = 2; i < arguments.length; i++) if (arguments[i]) el.append(arguments[i]);
+    return el;
+  }
+  function r2(n) { return Math.round(n * 100) / 100; }
+  function shapeD(type, fx, fy, r) {
+    var x = fx * 100, y = fy * 100;
+    function p(a, b) { return r2(a) + " " + r2(b); }
+    if (type === "molotov") return "M" + p(x, y - r * 1.2) + "L" + p(x + r * 1.1, y + r * 0.85) + "L" + p(x - r * 1.1, y + r * 0.85) + "Z";
+    if (type === "flash") return "M" + p(x, y - r * 1.3) + "L" + p(x + r * 1.3, y) + "L" + p(x, y + r * 1.3) + "L" + p(x - r * 1.3, y) + "Z";
+    if (type === "he") return "M" + p(x - r, y - r) + "L" + p(x + r, y - r) + "L" + p(x + r, y + r) + "L" + p(x - r, y + r) + "Z";
+    return "M" + p(x - r, y) + "A" + r + " " + r + " 0 1 0 " + p(x + r, y) + "A" + r + " " + r + " 0 1 0 " + p(x - r, y) + "Z";
+  }
+  function mapSrc(id) { return state.mapImgs[id] || ""; }
+  function applyMaps(o) {
+    var out = {};
+    Object.keys(o || {}).forEach(function (k) {
+      var d = o[k] || {};
+      var src = typeof d.imgId === "string" && /^[0-9a-f]{32}$/.test(d.imgId) ? "/_blob/" + d.imgId : safeSrc(d.src);
+      if (src) out[k] = src;
+    });
+    state.mapImgs = out;
+    render();
+    if (!els.overlay.hidden) drawPlace();
+  }
+  function boardBase(box, mapId) {
+    box.replaceChildren();
+    var nm = mapId ? mapNameOf(mapId) : "cette map";
+    var src = mapId ? mapSrc(mapId) : "";
+    if (src) box.append(h("img", { class: "board-img", src: src, alt: "Radar de " + nm, draggable: "false" }));
+    else box.append(h("div", { class: "board-empty" }, h("span", null, mapId ? "Pas encore d'image radar pour " + nm : "Choisis une map de la liste pour voir son radar")));
+    var s = svgEl("svg", { class: "board-svg", viewBox: "0 0 100 100", role: "group", "aria-label": "Plan de " + nm });
+    box.append(s);
+    return s;
+  }
+  function routeLine(a, b) {
+    return svgEl("line", { class: "route-line", x1: r2(a.x * 100), y1: r2(a.y * 100), x2: r2(b.x * 100), y2: r2(b.y * 100) });
+  }
+  function spotEl(p) { return svgEl("circle", { class: "spot", cx: r2(p.x * 100), cy: r2(p.y * 100), r: "1.7" }); }
+  function selectFromBoard(id) {
+    state.sel = id; state.open.add(id); state.confirm = null;
+    render();
+    var el = document.querySelector('[data-id="' + id + '"]');
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+  }
+  function pinEl(it, selected) {
+    var g = svgEl("g", { class: "pin" + (selected ? " sel" : ""), "data-type": it.type, tabindex: "0", role: "button", "aria-label": it.title + (selected ? ", sélectionné" : "") });
+    var t = svgEl("title", {});
+    t.textContent = it.title;
+    g.append(t, svgEl("circle", { cx: r2(it.tp.x * 100), cy: r2(it.tp.y * 100), r: "4.6", fill: "transparent" }),
+      svgEl("path", { class: "shape", d: shapeD(it.type, it.tp.x, it.tp.y, selected ? 3.1 : 2.4) }));
+    g.addEventListener("click", function () { selectFromBoard(it.id); });
+    g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectFromBoard(it.id); } });
+    return g;
+  }
+  function renderBoard(rows) {
+    var s = boardBase($("board"), state.map);
+    var placed = rows.filter(function (i) { return i.tp; });
+    var cur = rows.filter(function (i) { return i.id === state.sel; })[0];
+    if (cur && cur.fp && cur.tp) s.append(routeLine(cur.fp, cur.tp));
+    placed.filter(function (i) { return i !== cur; }).forEach(function (i) { s.append(pinEl(i, false)); });
+    if (cur && cur.tp) s.append(pinEl(cur, true));
+    if (cur && cur.fp) s.append(spotEl(cur.fp));
+    $("map-img-btn").textContent = mapSrc(state.map) ? "Changer l'image du radar" : "Ajouter l'image du radar";
+    var n = placed.length;
+    $("board-hint").textContent = !state.loaded ? ""
+      : n ? n + " lineup" + (n > 1 ? "s" : "") + " placé" + (n > 1 ? "s" : "") + " sur la map. Touche un repère pour l'ouvrir."
+      : rows.length ? "Aucun de ces lineups n'est placé. Modifie-en un pour poser ses points."
+      : "Les lineups placés apparaissent ici.";
+  }
+  function drawPlace() {
+    if (!draft) return;
+    var m = f.map.value === "__other" ? "" : f.map.value;
+    var s = boardBase($("pl-board"), m);
+    var type = getRadio("f-type") || "smoke";
+    if (draft.fp && draft.tp) s.append(routeLine(draft.fp, draft.tp));
+    if (draft.tp) {
+      s.append(svgEl("g", { class: "pin", "data-type": type }, svgEl("path", { class: "shape", d: shapeD(type, draft.tp.x, draft.tp.y, 3.1) })));
+    }
+    if (draft.fp) s.append(spotEl(draft.fp));
+    $("pl-hint").textContent = !m
+      ? "Choisis une map de la liste pour poser les points."
+      : "Touche la map pour placer le point choisi. Le rond blanc est la position de lancer, la forme colorée est la cible.";
+  }
+
+  function field(label, text) {
+    return h("div", null, h("p", { class: "k" }, label), h("p", { class: "v" }, text));
+  }
+  function shot(src, cap) {
+    return h("figure", { class: "shot" },
+      h("button", { type: "button", class: "shot-btn", "aria-label": "Agrandir : " + cap, onclick: function () { openLightbox(src, cap); } },
+        h("img", { src: src, alt: cap, loading: "lazy" })),
+      h("figcaption", null, cap));
+  }
+
+  function card(it) {
+    var open = state.open.has(it.id);
+    var bodyId = "b-" + it.id;
+    var t = TYPES.filter(function (x) { return x.id === it.type; })[0] || TYPES[0];
+    var route = it.from && it.to ? [it.from, " → ", it.to] : it.to ? ["→ ", it.to] : it.from ? [it.from] : null;
+    var tags = [
+      h("span", { class: "tag type", "data-type": it.type }, t.label),
+      h("span", { class: "tag side-" + it.side }, SIDES[it.side])
+    ];
+    if (it.throwType) tags.push(h("span", { class: "tag" }, labelOf(THROWS, it.throwType)));
+    if (it.click) tags.push(h("span", { class: "tag" }, labelOf(CLICKS, it.click)));
+    if (it.example) tags.push(h("span", { class: "tag ex" }, "Exemple"));
+    if (it.tp) tags.push(h("span", { class: "tag" }, "Sur la map"));
+
+    var head = h("div", { class: "card-top" },
+      h("button", {
+        type: "button", class: "toggle", "data-k": "tg:" + it.id,
+        "aria-expanded": open ? "true" : "false", "aria-controls": bodyId,
+        onclick: function () { toggle(it.id); }
+      },
+        h("span", { class: "ico", "data-type": it.type, "aria-hidden": "true", html: icon(it.type, 22) }),
+        h("span", { class: "ttl" },
+          h("span", { class: "name" }, it.title),
+          route ? h("span", { class: "route" }, route) : null,
+          h("span", { class: "tags" }, tags))),
+      h("button", {
+        type: "button", class: "fav" + (it.fav ? " on" : ""), "data-k": "fav:" + it.id,
+        "aria-pressed": it.fav ? "true" : "false",
+        "aria-label": it.fav ? "Retirer des favoris" : "Mettre en favori",
+        html: icon("star", 22),
+        onclick: function () { toggleFav(it); }
+      }));
+
+    var body = null;
+    if (open) {
+      var parts = [];
+      if (it.steps) parts.push(field("Comment le lancer", it.steps));
+      if (it.notes) parts.push(field("Notes", it.notes));
+      if (it.images.length) parts.push(h("div", { class: "shots" }, it.images.map(function (m, i) { return shot(imgUrl(m), m.cap || "Image " + (i + 1)); })));
+      if (!parts.length) parts.push(h("p", { class: "muted" }, "Pas encore de détails. Modifie ce lineup pour ajouter le geste et des captures."));
+      parts.push(actions(it));
+      body = h("div", { class: "card-body", id: bodyId }, parts);
+    }
+    return h("article", { class: "card" + (state.sel === it.id ? " sel" : ""), "data-id": it.id }, head, body);
+  }
+
+  function actions(it) {
+    if (state.confirm === it.id) {
+      return h("div", { class: "actions" },
+        h("span", { class: "muted" }, "Supprimer ce lineup ?"),
+        h("button", { type: "button", class: "btn danger", "data-k": "ok:" + it.id, onclick: function () { del(it); } }, "Supprimer"),
+        h("button", { type: "button", class: "btn", "data-k": "no:" + it.id, onclick: function () { state.confirm = null; renderList(); } }, "Annuler"));
+    }
+    return h("div", { class: "actions" },
+      h("button", { type: "button", class: "btn", "data-k": "ed:" + it.id, onclick: function () { openSheet(it); } }, h("span", { html: icon("edit", 18) }), "Modifier"),
+      h("button", { type: "button", class: "btn", "data-k": "rm:" + it.id, onclick: function () { state.confirm = it.id; renderList(); } }, h("span", { html: icon("trash", 18) }), "Supprimer"));
+  }
+
+  function resetFilters() {
+    state.side = "all"; state.types.clear(); state.q = ""; els.q.value = "";
+    savePrefs(); render();
+  }
+
+  function emptyBlock(title, sub, label, fn) {
+    return h("div", { class: "empty" },
+      h("p", { class: "empty-t" }, title),
+      h("p", { class: "empty-s" }, sub),
+      h("button", { type: "button", class: "btn", "data-k": "empty", onclick: fn }, label));
+  }
+
+  function renderList() {
+    var name = mapNameOf(state.map);
+    els.mapTitle.textContent = name;
+    if (!state.loaded) {
+      els.mapCount.textContent = "";
+      renderBoard([]);
+      els.list.replaceChildren(h("div", { class: "empty" },
+        h("p", { class: "empty-t" }, "Ton carnet se charge"),
+        h("p", { class: "empty-s" }, "Les lineups apparaissent ici, classés par map, par côté et par type de grenade.")));
+      return;
+    }
+    var inMap = state.items.filter(function (i) { return i.map === state.map; });
+    var q = state.q.trim().toLowerCase();
+    var rows = inMap.filter(function (i) {
+      var sideOk = state.side === "all" || i.side === state.side || i.side === "both";
+      var typeOk = !state.types.size || state.types.has(i.type);
+      var qOk = !q || [i.title, i.from, i.to, i.steps, i.notes].join(" ").toLowerCase().indexOf(q) >= 0;
+      return sideOk && typeOk && qOk;
+    });
+    rows.sort(function (a, b) { return (b.fav ? 1 : 0) - (a.fav ? 1 : 0) || b.createdAt - a.createdAt; });
+    renderBoard(rows);
+    els.mapCount.textContent = rows.length + (rows.length !== inMap.length ? " sur " + inMap.length : "") + " lineup" + (inMap.length > 1 ? "s" : "");
+
+    if (!rows.length) {
+      var el;
+      if (!state.items.length) el = emptyBlock("Carnet vide", "Ajoute tes smokes, molotovs, flashs et HE avec la position de lancer, la cible et une capture.", "Ajouter un lineup", function () { openSheet(null); });
+      else if (!inMap.length) el = emptyBlock("Rien sur " + name + " pour l'instant", "Ajoute ton premier lineup pour cette map.", "Ajouter un lineup", function () { openSheet(null); });
+      else el = emptyBlock("Aucun lineup avec ces filtres", "Change de côté, de type ou efface la recherche.", "Réinitialiser les filtres", resetFilters);
+      els.list.replaceChildren(el);
+      return;
+    }
+    els.list.replaceChildren.apply(els.list, rows.map(card));
+  }
+
+  function focusKey() {
+    var a = document.activeElement;
+    return a && a.getAttribute ? a.getAttribute("data-k") : null;
+  }
+  function restoreFocus(key) {
+    if (!key) return;
+    var n = document.querySelector('[data-k="' + key.replace(/"/g, "") + '"]');
+    if (n && n.focus) n.focus();
+  }
+  function render() {
+    var key = focusKey();
+    renderStatus(); renderSub(); renderNav(); renderControls(); renderList();
+    restoreFocus(key);
+  }
+  function renderListKeep() { var k = focusKey(); renderList(); restoreFocus(k); }
+
+  /* ---------- actions ---------- */
+  function toggle(id) {
+    if (state.open.has(id)) { state.open.delete(id); if (state.sel === id) state.sel = ""; }
+    else { state.open.add(id); state.sel = id; }
+    renderListKeep();
+  }
+  function failMsg(err) {
+    var c = err && err.code;
+    if (c === "quota_exceeded") return "Carnet plein : supprime des lineups ou allège les captures.";
+    if (c === "local_storage") return "Stockage de l'appareil plein ou bloqué : ce lineup ne sera pas conservé.";
+    return "Enregistrement impossible pour l'instant. Réessaie dans un moment.";
+  }
+  function toggleFav(it) {
+    if (state.busy.has(it.id)) return;
+    state.busy.add(it.id);
+    var next = Object.assign({}, it, { fav: !it.fav });
+    Promise.resolve().then(function () { return store.save(next); })
+      .catch(function (e) { toast(failMsg(e)); })
+      .then(function () { state.busy.delete(it.id); });
+  }
+  function del(it) {
+    state.confirm = null;
+    state.open.delete(it.id);
+    Promise.resolve().then(function () { return store.remove(it.id); })
+      .then(function () { toast("Lineup supprimé"); })
+      .catch(function (e) { toast(failMsg(e)); render(); });
+    renderList();
+  }
+
+  function openLightbox(src, cap) {
+    els.lbImg.src = src; els.lbImg.alt = cap;
+    els.lightbox.hidden = false;
+    $("lb-close").focus();
+  }
+  function closeLightbox() { els.lightbox.hidden = true; els.lbImg.removeAttribute("src"); }
+  els.lightbox.addEventListener("click", closeLightbox);
+
+  /* ---------- sheet ---------- */
+  var draft = null, lastFocus = null, saving = false;
+
+  function setRadio(name, val) {
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="' + name + '"]'), function (r) { r.checked = r.value === val; });
+  }
+  function getRadio(name) {
+    var r = document.querySelector('input[name="' + name + '"]:checked');
+    return r ? r.value : "";
+  }
+  function fillMapOptions(sel) {
+    var opts = allMaps().map(function (m) { return h("option", { value: m.id }, m.name); });
+    opts.push(h("option", { value: "__other" }, "Autre map…"));
+    f.map.replaceChildren.apply(f.map, opts);
+    f.map.value = allMaps().some(function (m) { return m.id === sel; }) ? sel : "mirage";
+  }
+  function syncOther() { f.mapNameWrap.hidden = f.map.value !== "__other"; }
+  function showErr(input, errId, msg) {
+    var e = $(errId);
+    e.textContent = msg; e.hidden = false;
+    input.setAttribute("aria-invalid", "true");
+    input.focus();
+  }
+  function clearErr() {
+    ["f-title", "f-mapname"].forEach(function (id) { $(id).removeAttribute("aria-invalid"); $(id + "-err").hidden = true; });
+  }
+  function renderImgs() {
+    var box = $("imgs");
+    box.replaceChildren.apply(box, draft.images.map(function (m, i) {
+      return h("div", { class: "img-row" },
+        h("img", { src: imgUrl(m), alt: "Aperçu de l'image " + (i + 1) }),
+        h("input", {
+          type: "text", value: m.cap, maxlength: "80", placeholder: "Légende (ex. Position de lancer)",
+          "aria-label": "Légende de l'image " + (i + 1),
+          oninput: function (e) { m.cap = e.target.value; }
+        }),
+        h("button", { type: "button", class: "btn", onclick: function () { draft.images.splice(i, 1); renderImgs(); } }, "Retirer"));
+    }));
+    $("img-hint").textContent = "Jusqu'à " + LIM.imgs + " images, redimensionnées automatiquement.";
+  }
+
+  function openSheet(item) {
+    lastFocus = document.activeElement;
+    draft = item ? Object.assign({}, item) : { id: "", images: [], fp: null, tp: null, fav: false, createdAt: 0, example: false };
+    els.sheetTitle.textContent = item ? "Modifier le lineup" : "Nouveau lineup";
+    fillMapOptions(item ? item.map : state.map);
+    f.title.value = item ? item.title : "";
+    f.mapName.value = ""; syncOther();
+    setRadio("f-side", item ? item.side : (state.side === "all" ? "t" : state.side));
+    setRadio("f-type", item ? item.type : (state.types.size === 1 ? Array.from(state.types)[0] : "smoke"));
+    f.from.value = item ? item.from : "";
+    f.to.value = item ? item.to : "";
+    f.click.value = item ? item.click : "";
+    f.throwType.value = item ? item.throwType : "";
+    f.steps.value = item ? item.steps : "";
+    f.notes.value = item ? item.notes : "";
+    draft.images = (draft.images || []).map(function (m) { return Object.assign({}, m); });
+    f.files.value = "";
+    clearErr(); renderImgs();
+    setRadio("f-place", draft.fp ? "to" : "from");
+    drawPlace();
+    els.overlay.hidden = false;
+    document.body.classList.add("lock");
+    if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) f.title.focus();
+  }
+  function closeSheet() {
+    els.overlay.hidden = true;
+    document.body.classList.remove("lock");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function readImage(file, maxLen, dimsIn) {
+    return new Promise(function (res, rej) {
+      if (!file || !/^image\//.test(file.type)) { rej(new Error("type")); return; }
+      var fr = new FileReader();
+      fr.onerror = function () { rej(new Error("read")); };
+      fr.onload = function () {
+        var img = new Image();
+        img.onerror = function () { rej(new Error("decode")); };
+        img.onload = function () {
+          var dims = dimsIn || [960, 800, 640, 480, 360], quals = [0.78, 0.66, 0.54, 0.42];
+          for (var a = 0; a < dims.length; a++) {
+            var k = Math.min(1, dims[a] / Math.max(img.naturalWidth, img.naturalHeight));
+            var w = Math.max(1, Math.round(img.naturalWidth * k)), hh = Math.max(1, Math.round(img.naturalHeight * k));
+            var c = document.createElement("canvas"); c.width = w; c.height = hh;
+            var ctx = c.getContext("2d");
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, hh); ctx.drawImage(img, 0, 0, w, hh);
+            for (var b = 0; b < quals.length; b++) {
+              var out = c.toDataURL("image/jpeg", quals[b]);
+              if (out.length <= (maxLen || 100000)) { res(out); return; }
+            }
+          }
+          rej(new Error("size"));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  function toBlob(file, maxDim) {
+    return new Promise(function (res, rej) {
+      if (!file || !/^image\//.test(file.type)) { rej(new Error("type")); return; }
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error("decode")); };
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var k = Math.min(1, (maxDim || 1600) / Math.max(img.naturalWidth, img.naturalHeight));
+        var w = Math.max(1, Math.round(img.naturalWidth * k)), hh = Math.max(1, Math.round(img.naturalHeight * k));
+        var c = document.createElement("canvas"); c.width = w; c.height = hh;
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, hh); ctx.drawImage(img, 0, 0, w, hh);
+        c.toBlob(function (b) { if (b) res(b); else rej(new Error("blob")); }, "image/jpeg", 0.85);
+      };
+      img.src = url;
+    });
+  }
+  function addOne(file) {
+    if (draft.images.length >= LIM.imgs) return Promise.reject(new Error("max"));
+    return readImage(file, LIM.imgLen, LIM.imgDims).then(function (data) { draft.images.push({ id: "", src: data, cap: "" }); });
+  }
+  function pickMany(files) {
+    var list = Array.prototype.slice.call(files || []);
+    if (!list.length) return;
+    var failed = 0;
+    list.reduce(function (p, file) {
+      return p.then(function () { return addOne(file); }).catch(function () { failed++; });
+    }, Promise.resolve()).then(function () {
+      f.files.value = "";
+      renderImgs();
+      if (failed) toast(failed + " image" + (failed > 1 ? "s" : "") + " non ajoutée" + (failed > 1 ? "s" : "") + " (illisible, trop lourde ou limite atteinte).");
+    });
+  }
+  f.files.addEventListener("change", function () { pickMany(f.files.files); });
+  f.map.addEventListener("change", function () { syncOther(); drawPlace(); });
+
+  els.form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (saving) return;
+    clearErr();
+    var title = f.title.value.trim();
+    if (!title) { showErr(f.title, "f-title-err", "Donne un nom au lineup."); return; }
+    var map = f.map.value, mapName = "";
+    if (map === "__other") {
+      var nm = f.mapName.value.trim();
+      if (!nm) { showErr(f.mapName, "f-mapname-err", "Indique le nom de la map."); return; }
+      map = slug(nm); mapName = nm;
+      if (MAPS.some(function (m) { return m.id === map; })) mapName = "";
+    } else if (!MAPS.some(function (m) { return m.id === map; })) {
+      mapName = mapNameOf(map);
+    }
+    var item = {
+      id: draft.id || mintId(),
+      map: map, mapName: mapName,
+      side: getRadio("f-side") || "t",
+      type: getRadio("f-type") || "smoke",
+      title: title,
+      from: f.from.value.trim(), to: f.to.value.trim(),
+      click: f.click.value, throwType: f.throwType.value,
+      steps: f.steps.value.trim(), notes: f.notes.value.trim(),
+      images: draft.images.map(function (m) { return { id: m.id, src: m.src, cap: m.cap.trim() }; }),
+      fp: draft.fp || null, tp: draft.tp || null,
+      fav: !!draft.fav, example: false,
+      createdAt: draft.createdAt || Date.now()
+    };
+    if (JSON.stringify(plain(item)).length > LIM.docMax) { toast("Les captures sont trop lourdes pour ce lineup. Retire-en une."); return; }
+    saving = true; $("save").disabled = true;
+    Promise.resolve().then(function () { return store.save(item); })
+      .then(function () {
+        state.map = item.map;
+        if (state.side !== "all" && item.side !== "both") state.side = item.side;
+        if (state.types.size && !state.types.has(item.type)) state.types.clear();
+        state.q = ""; els.q.value = "";
+        state.open.add(item.id); state.sel = item.id;
+        savePrefs();
+        closeSheet();
+        render();
+        toast("Lineup enregistré");
+      })
+      .catch(function (err) { toast(failMsg(err)); })
+      .then(function () { saving = false; $("save").disabled = false; });
+  });
+  $("close").addEventListener("click", closeSheet);
+  $("cancel").addEventListener("click", closeSheet);
+  $("lb-close").addEventListener("click", closeLightbox);
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (!els.lightbox.hidden) closeLightbox();
+    else if (!els.overlay.hidden) closeSheet();
+  });
+  $("fab").addEventListener("click", function () { openSheet(null); });
+
+  /* ---------- static controls ---------- */
+  Array.prototype.forEach.call(els.seg.querySelectorAll("button"), function (b) {
+    b.addEventListener("click", function () { state.side = b.getAttribute("data-v"); savePrefs(); render(); });
+  });
+  els.types.replaceChildren.apply(els.types, TYPES.map(function (t) {
+    return h("button", {
+      type: "button", class: "chip", "data-type": t.id, "aria-pressed": "false",
+      onclick: function () { if (state.types.has(t.id)) state.types.delete(t.id); else state.types.add(t.id); render(); }
+    }, h("span", { class: "ico", "aria-hidden": "true", html: icon(t.id, 18) }), t.label);
+  }));
+  els.q.addEventListener("input", function () { state.q = els.q.value; renderList(); });
+
+  f.click.replaceChildren.apply(f.click, [h("option", { value: "" }, "Non précisé")].concat(CLICKS.map(function (c) { return h("option", { value: c[0] }, c[1]); })));
+  f.throwType.replaceChildren.apply(f.throwType, [h("option", { value: "" }, "Non précisé")].concat(THROWS.map(function (c) { return h("option", { value: c[0] }, c[1]); })));
+  $("f-side-opts").replaceChildren.apply($("f-side-opts"), ["t", "ct", "both"].map(function (s) {
+    return h("label", { class: "opt" }, h("input", { type: "radio", name: "f-side", value: s }), h("span", { class: "box" }, SIDES[s]));
+  }));
+  $("f-type-opts").replaceChildren.apply($("f-type-opts"), TYPES.map(function (t) {
+    return h("label", { class: "opt", "data-type": t.id }, h("input", { type: "radio", name: "f-type", value: t.id }),
+      h("span", { class: "box" }, h("span", { class: "ico", "aria-hidden": "true", html: icon(t.id, 18) }), t.label));
+  }));
+
+  $("f-place-opts").replaceChildren.apply($("f-place-opts"), [["from", "Position de lancer"], ["to", "Cible"]].map(function (p) {
+    return h("label", { class: "opt" }, h("input", { type: "radio", name: "f-place", value: p[0] }), h("span", { class: "box" }, p[1]));
+  }));
+  $("f-type-opts").addEventListener("change", drawPlace);
+  $("pl-board").addEventListener("click", function (e) {
+    if (!draft || !(f.map.value && f.map.value !== "__other")) return;
+    var svg = this.querySelector("svg");
+    var r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var pt = {
+      x: Math.round(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * 1000) / 1000,
+      y: Math.round(Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) * 1000) / 1000
+    };
+    if (getRadio("f-place") === "to") draft.tp = pt;
+    else { draft.fp = pt; if (!draft.tp) setRadio("f-place", "to"); }
+    drawPlace();
+  });
+  $("pl-clear").addEventListener("click", function () {
+    if (!draft) return;
+    draft.fp = null; draft.tp = null;
+    setRadio("f-place", "from");
+    drawPlace();
+  });
+  $("map-img-btn").addEventListener("click", function () { $("map-file").click(); });
+  $("map-file").addEventListener("change", function () {
+    var input = this, file = input.files && input.files[0], id = state.map;
+    if (!file || !store) return;
+    var job = readImage(file, LIM.mapLen, LIM.mapDims).then(function (d) { return { src: d }; });
+    job.then(function (data) { return store.saveMap(id, data); })
+      .then(function () { toast("Image du radar enregistrée"); })
+      .catch(function (err) {
+        toast(err && err.code === "quota_exceeded" ? "Base pleine : l'image n'a pas pu être enregistrée." : "Image illisible ou enregistrement impossible. Essaie un JPG ou PNG.");
+      })
+      .then(function () { input.value = ""; });
+  });
+
+  /* ---------- export / import ---------- */
+  function exportAll() {
+    var lineups = state.items.map(function (it) {
+      var o = plain(it);
+      o.id = it.id;
+      o.images = it.images.filter(function (m) { return m.src; }).map(function (m) { return { src: m.src, cap: m.cap }; });
+      return o;
+    });
+    var maps = {};
+    Object.keys(state.mapImgs).forEach(function (k) { maps[k] = state.mapImgs[k]; });
+    var payload = { app: "carnet-nades", v: 2, exportedAt: new Date().toISOString(), lineups: lineups, maps: maps };
+    var url = URL.createObjectURL(new Blob([JSON.stringify(payload)], { type: "application/json" }));
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "carnet-de-nades-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    toast("Sauvegarde exportée (" + lineups.length + " lineup" + (lineups.length > 1 ? "s" : "") + ")");
+  }
+  function importAll(file) {
+    var fr = new FileReader();
+    fr.onerror = function () { toast("Fichier illisible."); };
+    fr.onload = function () {
+      var d;
+      try { d = JSON.parse(fr.result); } catch (e) { d = null; }
+      if (!d || typeof d !== "object" || !Array.isArray(d.lineups)) { toast("Ce fichier n'est pas une sauvegarde du carnet."); return; }
+      var jobs = [], n = 0;
+      d.lineups.slice(0, 5000).forEach(function (row) {
+        if (!row || typeof row !== "object" || typeof row.id !== "string" || !/^[A-Za-z0-9_\-]{1,100}$/.test(row.id)) return;
+        var item = norm(row.id, row);
+        item.images = item.images.filter(function (m) { return m.src; });
+        n++;
+        jobs.push(store.save(item));
+      });
+      var mi = d.maps && typeof d.maps === "object" ? d.maps : {};
+      Object.keys(mi).forEach(function (k) {
+        if (/^[a-z0-9\-]{1,40}$/.test(k) && safeSrc(mi[k])) jobs.push(store.saveMap(k, { src: mi[k] }));
+      });
+      Promise.all(jobs)
+        .then(function () { toast(n + " lineup" + (n > 1 ? "s" : "") + " importé" + (n > 1 ? "s" : "")); })
+        .catch(function (err) { toast(err && err.code === "quota_exceeded" ? "Espace plein : import incomplet." : "Import incomplet."); });
+    };
+    fr.readAsText(file);
+  }
+  $("exp-btn").addEventListener("click", function () { if (state.loaded) exportAll(); });
+  $("imp-btn").addEventListener("click", function () { $("imp-file").click(); });
+  $("imp-file").addEventListener("change", function () {
+    var input = this, file = input.files && input.files[0];
+    if (file && store) importAll(file);
+    input.value = "";
+  });
+
+  /* ---------- boot ---------- */
+  render();
+  (function boot() {
+    openIdb().then(function (dbh) {
+      LIM = BIG;
+      store = makeIdb(dbh);
+    }, function () {
+      store = makeLocal();
+    }).then(function () {
+      state.sync = "local";
+      store.subscribe(function (items) { state.items = items; state.loaded = true; render(); });
+      store.subscribeMaps(applyMaps, function () {});
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    });
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    }
+  })();
+})();
+</script>
+</body>
+</html>

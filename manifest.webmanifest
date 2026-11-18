@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Carnet de nades II",
+  "short_name": "Nades",
+  "description": "Carnet de lineups CS2 classés par map et par côté, avec plan de la map.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0e1318",
+  "theme_color": "#0e1318",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
